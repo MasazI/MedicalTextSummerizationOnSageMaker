@@ -40,6 +40,8 @@ if __name__ == "__main__":
     parser.add_argument("--evaluation-strategy", type=str, default="epoch")
     parser.add_argument("--save-strategy", type=str, default="epoch")
     parser.add_argument("--save-steps", type=int, default=500)
+    parser.add_argument("--check-points-dir", type=str, default="/opt/ml/checkpoints")
+
     # Data, model, and output directories
     parser.add_argument("--output-data-dir", type=str, default=os.environ["SM_OUTPUT_DATA_DIR"])
     parser.add_argument("--model-dir", type=str, default=os.environ["SM_MODEL_DIR"])
@@ -63,12 +65,13 @@ if __name__ == "__main__":
 
     # sequence to sequence training arguments
     training_args = Seq2SeqTrainingArguments(
-        output_dir=args.model_dir,
+        output_dir=args.check_points_dir,
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.train_batch_size,
         per_device_eval_batch_size=args.eval_batch_size,
         save_strategy=args.save_strategy,
         save_steps=args.save_steps,
+        save_total_limit=3,
         evaluation_strategy=args.evaluation_strategy,
         logging_dir=f"{args.output_data_dir}/logs",
         learning_rate=float(args.learning_rate),
@@ -94,3 +97,4 @@ if __name__ == "__main__":
 
     # Saves the model to s3
     trainer.save_model(args.model_dir)
+    tokenizer.save_pretrained(args.model_dir)
